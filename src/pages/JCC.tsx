@@ -207,41 +207,37 @@ function buildJCCPDF(f: JCCForm): string {
 
   </table>
 
-  <!-- SIGNATURES TABLE — matches Excel rows 33-42 exactly -->
+  <!-- SIGNATURES TABLE -->
   <table style="width:100%;border-collapse:collapse;margin-top:2mm">
 
-    <!-- Row 33-34: Approval | Contractor headers -->
+    <!-- Header row: Approval | Contractor -->
     <tr>
-      <td colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;background:#f5f5f5">
+      <td colspan="2" style="border:1px solid #000;padding:6px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;background:#f0f0f0">
         الإعتماد<br/>Approval
       </td>
-      <td colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;background:#f5f5f5">
+      <td colspan="2" style="border:1px solid #000;padding:6px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;background:#f0f0f0">
         المقاول<br/>Contractor
       </td>
     </tr>
 
-    <!-- Row 35-36: Manager label | Contractor Name | Name label -->
+    <!-- Row: empty | مدير ادارة المساندة الفنية | Name value | الاسم/Name -->
     <tr>
-      <td rowspan="2" style="border:1px solid #000;padding:5px 6px;width:12%;font-family:Arial;font-size:9pt;font-weight:bold;vertical-align:middle"></td>
-      <td rowspan="2" style="border:1px solid #000;padding:5px 8px;width:38%;text-align:right;font-family:Arial;font-size:10pt;font-weight:bold;vertical-align:middle">
+      <td style="border:1px solid #000;padding:5px 6px;width:5%"></td>
+      <td style="border:1px solid #000;padding:5px 8px;width:45%;text-align:right;font-family:Arial;font-size:10pt;font-weight:bold">
         مدير ادارة المساندة الفنية :
       </td>
       <td style="border:1px solid #000;padding:5px 8px;width:35%;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
         ${f.approvalManagerName || ""}
       </td>
-      <td rowspan="2" style="border:1px solid #000;padding:5px 8px;width:15%;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;vertical-align:middle">
+      <td style="border:1px solid #000;padding:5px 8px;width:15%;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
         الاسم<br/>Name
       </td>
     </tr>
-    <tr>
-      <td style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:9pt;color:#555">
-      </td>
-    </tr>
 
-    <!-- Row 37-38: Job Title row -->
+    <!-- Row: empty | empty | Project Manager | الوظيفة/Job Title -->
     <tr>
-      <td style="border:1px solid #000;padding:5px 6px;vertical-align:middle"></td>
-      <td style="border:1px solid #000;padding:5px 8px;vertical-align:middle"></td>
+      <td style="border:1px solid #000;padding:5px 6px;height:25px"></td>
+      <td style="border:1px solid #000;padding:5px 8px"></td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
         ${f.approvalManagerTitle || "Project Manager"}
       </td>
@@ -249,18 +245,18 @@ function buildJCCPDF(f: JCCForm): string {
         الوظيفة<br/>Job Title
       </td>
     </tr>
+
+    <!-- Empty spacer row -->
     <tr>
-      <td style="border:1px solid #000;padding:5px 6px;height:14px"></td>
-      <td style="border:1px solid #000;padding:5px 8px"></td>
-      <td style="border:1px solid #000;padding:5px 8px"></td>
-      <td style="border:1px solid #000;padding:5px 8px"></td>
+      <td style="border:1px solid #000;padding:0;height:16px"></td>
+      <td style="border:1px solid #000;padding:0;height:16px"></td>
+      <td style="border:1px solid #000;padding:0;height:16px"></td>
+      <td style="border:1px solid #000;padding:0;height:16px"></td>
     </tr>
 
-    <!-- Row 39-42: Sector Head rowspan + Sign label -->
+    <!-- Row: empty | رئيس قطاع | sector head name | التوقيع/Sign (rowspan 4) -->
     <tr>
-      <td rowspan="4" style="border:1px solid #000;padding:5px 6px;font-family:Arial;font-size:9pt;font-weight:bold;vertical-align:middle;text-align:center">
-        رئيس قطاع<br/>محطة طاقة<br/>الشقيق :
-      </td>
+      <td style="border:1px solid #000;padding:5px 6px;height:25px"></td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:right;font-family:Arial;font-size:10pt;font-weight:bold">
         رئيس قطاع محطة طاقة الشقيق :
       </td>
@@ -271,17 +267,22 @@ function buildJCCPDF(f: JCCForm): string {
         التوقيع<br/>Sign
       </td>
     </tr>
+
+    <!-- 3 empty rows for sector head signature space -->
     <tr>
-      <td style="border:1px solid #000;padding:5px 8px;height:20px"></td>
-      <td style="border:1px solid #000;padding:5px 8px"></td>
+      <td style="border:1px solid #000;padding:0;height:18px"></td>
+      <td style="border:1px solid #000;padding:0;height:18px"></td>
+      <td style="border:1px solid #000;padding:0;height:18px"></td>
     </tr>
     <tr>
-      <td style="border:1px solid #000;padding:5px 8px;height:14px"></td>
-      <td style="border:1px solid #000;padding:5px 8px"></td>
+      <td style="border:1px solid #000;padding:0;height:14px"></td>
+      <td style="border:1px solid #000;padding:0;height:14px"></td>
+      <td style="border:1px solid #000;padding:0;height:14px"></td>
     </tr>
     <tr>
-      <td style="border:1px solid #000;padding:5px 8px;height:14px"></td>
-      <td style="border:1px solid #000;padding:5px 8px"></td>
+      <td style="border:1px solid #000;padding:0;height:14px"></td>
+      <td style="border:1px solid #000;padding:0;height:14px"></td>
+      <td style="border:1px solid #000;padding:0;height:14px"></td>
     </tr>
 
   </table>
