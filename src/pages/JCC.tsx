@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import seLogo from "./images/AW_SE_LOGO_PRIM_EN_RGB.svg";
 
 interface JCCForm {
   // Header
@@ -55,23 +56,26 @@ function buildJCCPDF(f: JCCForm): string {
 <div style="font-family:Arial,sans-serif;font-size:10pt;font-weight:bold;width:190mm;padding:5mm;color:#000">
 
   <!-- CONFIDENTIAL HEADER -->
-  <div style="text-align:center;color:#CC0000;font-size:8pt;margin-bottom:3mm">
-    Confidential Internal - داخلي مقيد
+  <div style="text-align:center;color:#CC0000;font-size:8pt;font-weight:bold;margin-bottom:4mm">
+    داخلي مقيد - Confidential Internal
   </div>
 
-  <!-- COMPANY HEADER — 2 columns -->
-  <table style="width:100%;border-collapse:collapse;margin-bottom:3mm">
+  <!-- COMPANY HEADER: Logo left + bilingual text -->
+  <table style="width:100%;border-collapse:collapse;margin-bottom:4mm">
     <tr>
-      <td style="width:50%;font-size:12pt;font-weight:bold;padding:2px 0">Saudi Energy</td>
-      <td style="width:50%;font-size:12pt;font-weight:bold;text-align:right;padding:2px 0">السعودية للطاقة</td>
-    </tr>
-    <tr>
-      <td style="font-size:12pt;font-weight:bold;padding:2px 0">Energy Production Operation BU SOA</td>
-      <td style="font-size:12pt;font-weight:bold;text-align:right;padding:2px 0">وحدة اعمال عمليات انتاج الطاقة الجنوبي</td>
-    </tr>
-    <tr>
-      <td style="font-size:12pt;font-weight:bold;padding:2px 0">Shuqaiq Steam PP Sector</td>
-      <td style="font-size:12pt;font-weight:bold;text-align:right;padding:2px 0">قطاع محطة طاقة الشقيق البخارية</td>
+      <td style="width:20%;vertical-align:middle">
+        <img src="${seLogo}" style="width:60px;height:auto"/>
+      </td>
+      <td style="width:40%;vertical-align:top;font-family:Arial;font-size:11pt;font-weight:bold;line-height:1.8">
+        Saudi Energy<br/>
+        Energy Production Operation BU SOA<br/>
+        Shuqaiq Steam PP Sector
+      </td>
+      <td style="width:40%;vertical-align:top;font-family:Arial;font-size:11pt;font-weight:bold;text-align:right;line-height:1.8">
+        السعودية للطاقة<br/>
+        وحدة اعمال عمليات انتاج الطاقة الجنوبي<br/>
+        قطاع محطة طاقة الشقيق البخارية
+      </td>
     </tr>
   </table>
 
@@ -201,53 +205,90 @@ function buildJCCPDF(f: JCCForm): string {
       <td style="${cellStyle};text-align:right">التوقيع</td>
     </tr>
 
-    <!-- Approval / Contractor Header Row -->
-    <tr>
-      <td colspan="2" style="${labelStyle};text-align:center">الإعتماد<br/>Approval</td>
-      <td colspan="2" style="${labelStyle};text-align:center">المقاول<br/>Contractor</td>
-    </tr>
+  </table>
 
-    <!-- Manager Name Row -->
+  <!-- SIGNATURES TABLE — matches Excel rows 33-42 exactly -->
+  <table style="width:100%;border-collapse:collapse;margin-top:2mm">
+
+    <!-- Row 33-34: Approval | Contractor headers -->
     <tr>
-      <td style="${cellStyle};width:12%"></td>
-      <td style="${cellStyle};text-align:right;width:38%">
-        مدير ادارة المساندة الفنية:
+      <td colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;background:#f5f5f5">
+        الإعتماد<br/>Approval
       </td>
-      <td style="${cellStyle};text-align:center">${f.approvalManagerName || ""}</td>
-      <td style="${labelStyle};text-align:center">الاسم<br/>Name</td>
-    </tr>
-
-    <!-- Job Title Row -->
-    <tr>
-      <td style="${cellStyle}"></td>
-      <td style="${cellStyle}"></td>
-      <td style="${cellStyle};text-align:center">${f.approvalManagerTitle || "Project Manager"}</td>
-      <td style="${labelStyle};text-align:center">الوظيفة<br/>Job Title</td>
-    </tr>
-
-    <!-- Sector Head Row -->
-    <tr>
-      <td style="${cellStyle};min-height:50px" rowspan="3">
-        رئيس قطاع محطة طاقة الشقيق:
+      <td colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;background:#f5f5f5">
+        المقاول<br/>Contractor
       </td>
-      <td style="${cellStyle}"></td>
-      <td style="${cellStyle}"></td>
-      <td style="${labelStyle};text-align:center" rowspan="3">التوقيع<br/>Sign</td>
+    </tr>
+
+    <!-- Row 35-36: Manager label | Contractor Name | Name label -->
+    <tr>
+      <td rowspan="2" style="border:1px solid #000;padding:5px 6px;width:12%;font-family:Arial;font-size:9pt;font-weight:bold;vertical-align:middle"></td>
+      <td rowspan="2" style="border:1px solid #000;padding:5px 8px;width:38%;text-align:right;font-family:Arial;font-size:10pt;font-weight:bold;vertical-align:middle">
+        مدير ادارة المساندة الفنية :
+      </td>
+      <td style="border:1px solid #000;padding:5px 8px;width:35%;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
+        ${f.approvalManagerName || ""}
+      </td>
+      <td rowspan="2" style="border:1px solid #000;padding:5px 8px;width:15%;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;vertical-align:middle">
+        الاسم<br/>Name
+      </td>
     </tr>
     <tr>
-      <td style="${cellStyle}"></td>
-      <td style="${cellStyle}"></td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:9pt;color:#555">
+      </td>
+    </tr>
+
+    <!-- Row 37-38: Job Title row -->
+    <tr>
+      <td style="border:1px solid #000;padding:5px 6px;vertical-align:middle"></td>
+      <td style="border:1px solid #000;padding:5px 8px;vertical-align:middle"></td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
+        ${f.approvalManagerTitle || "Project Manager"}
+      </td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
+        الوظيفة<br/>Job Title
+      </td>
     </tr>
     <tr>
-      <td style="${cellStyle}"></td>
-      <td style="${cellStyle}"></td>
+      <td style="border:1px solid #000;padding:5px 6px;height:14px"></td>
+      <td style="border:1px solid #000;padding:5px 8px"></td>
+      <td style="border:1px solid #000;padding:5px 8px"></td>
+      <td style="border:1px solid #000;padding:5px 8px"></td>
+    </tr>
+
+    <!-- Row 39-42: Sector Head rowspan + Sign label -->
+    <tr>
+      <td rowspan="4" style="border:1px solid #000;padding:5px 6px;font-family:Arial;font-size:9pt;font-weight:bold;vertical-align:middle;text-align:center">
+        رئيس قطاع<br/>محطة طاقة<br/>الشقيق :
+      </td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:right;font-family:Arial;font-size:10pt;font-weight:bold">
+        رئيس قطاع محطة طاقة الشقيق :
+      </td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
+        ${f.sectorHeadName || ""}
+      </td>
+      <td rowspan="4" style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;vertical-align:middle">
+        التوقيع<br/>Sign
+      </td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;height:20px"></td>
+      <td style="border:1px solid #000;padding:5px 8px"></td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;height:14px"></td>
+      <td style="border:1px solid #000;padding:5px 8px"></td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;height:14px"></td>
+      <td style="border:1px solid #000;padding:5px 8px"></td>
     </tr>
 
   </table>
 
   <!-- CONFIDENTIAL FOOTER -->
-  <div style="text-align:center;color:#CC0000;font-size:8pt;margin-top:3mm;border-top:1px solid #ccc;padding-top:2mm">
-    Classified as Confidential Internal by SEC - مصنف مقيد داخلي من شركة الكهرباء السعودية
+  <div style="text-align:center;color:#CC0000;font-size:9pt;font-weight:bold;margin-top:4mm;border-top:1px solid #ccc;padding-top:2mm;font-family:Arial">
+    مصنف مقيد داخلي من شركة الكهرباء السعودية - Classified as Confidential Internal by SEC
   </div>
 
 </div>`;
@@ -511,8 +552,8 @@ export const JCC: React.FC = () => {
           onChange={v => upd("approvalManagerTitle", v)} placeholder="Project Manager" />
         <FInput label="Contractor Representative / ممثل المقاول" value={F.contractorRepName}
           onChange={v => upd("contractorRepName", v)} placeholder="Name" />
-        <FInput label="Sector Head / رئيس القطاع" value={F.sectorHeadName}
-          onChange={v => upd("sectorHeadName", v)} placeholder="Name" />
+        <FInput label="Sector Head / رئيس قطاع محطة طاقة الشقيق" value={F.sectorHeadName}
+          onChange={v => upd("sectorHeadName", v)} placeholder="Full name" />
       </Section>
 
       {/* Action Buttons */}
