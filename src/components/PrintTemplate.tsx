@@ -1,6 +1,7 @@
 /* eslint-disable react/no-danger */
 import React, { forwardRef } from "react";
 import type { PRRequest } from "../pages/mockData";
+import seLogoEn from "../pages/images/AW_SE_LOGO_PRIM_EN_RGB.svg";
 
 // ── Checkbox helper ──────────────────────────────────────────────────────────
 const CB = ({ checked }: { checked: boolean }) => (
@@ -90,51 +91,57 @@ export const PrintTemplate = forwardRef<HTMLDivElement, Props>(({ request: r }, 
           </tr></tbody>
         </table>
 
-        {/* ② Header */}
-        <table style={{ marginBottom:"0" }}>
-          <tbody><tr>
-            <td style={{ width:"30mm", height:"13mm", border:"1px solid #333", textAlign:"center", verticalAlign:"middle", fontSize:"7pt", fontWeight:"bold", background:"#003087", color:"#FFFFFF" }}>
-              <div style={{ fontSize:"10pt", fontWeight:"bold" }}>SE</div>
-              <div style={{ fontSize:"5.5pt", fontWeight:"normal" }}>شركة الكهرباء السعودية</div>
-            </td>
-            <td style={{ border:"1px solid #333", textAlign:"center", verticalAlign:"middle", background:"#003087", color:"#FFFFFF" }}>
-              <div style={{ fontSize:"12pt", fontWeight:"bold", letterSpacing:"0.03em" }}>SHUQAIQ POWER PLANT</div>
-              <div style={{ fontSize:"9pt", fontWeight:"bold", textDecoration:"underline", marginTop:"1mm" }}>
-                PURCHASE REQUEST UNDER CURRENT CONTRACT
-              </div>
-              <div style={{ fontSize:"7pt", color:"rgba(255,255,255,0.8)", marginTop:"1mm" }}>طلب شراء تحت العقد الحالي</div>
-            </td>
-          </tr></tbody>
-        </table>
-
-        {/* ③ PR / Contract / Date row */}
-        <table style={{ marginTop:"-1px" }}>
-          <tbody><tr>
-            <Cell header w="18mm">PR NO.</Cell>
-            <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", width:"36mm", fontWeight:"bold", color:"#00008B", fontSize:"7pt" }}>{r.id}</td>
-            <Cell header w="28mm">CONTRACT NO:</Cell>
-            <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", width:"50mm", fontSize:"7pt" }}>{r.contractNo||""}</td>
-            <Cell header w="22mm">DATE (G):</Cell>
-            <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontSize:"7pt" }}>{r.date||""}</td>
-          </tr></tbody>
-        </table>
-
-        {/* ④ Power Plant / Contractor row */}
-        <table style={{ marginTop:"-1px" }}>
-          <tbody><tr>
-            <Cell header w="18mm">POWER PLANT:</Cell>
-            <td colSpan={3} style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontWeight:"bold", fontSize:"7pt", width:"116mm" }}>SHUQAIQ STEAM POWER PLANT</td>
-            <Cell header w="28mm">CONTRACTOR NAME:</Cell>
-            <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontWeight:"bold", fontSize:"7pt" }}>{r.contractor||""}</td>
-          </tr></tbody>
+        {/* ②③④ Unified header — logo rowSpan=3 keeps perfect border alignment */}
+        <table style={{ width:"100%", borderCollapse:"collapse", marginBottom:0 }}>
+          <tbody>
+            {/* ② Title row */}
+            <tr>
+              <td rowSpan={3} style={{
+                width:"34mm", border:"1px solid #333", background:"#FFFFFF",
+                textAlign:"center", verticalAlign:"middle", padding:"2mm",
+              }}>
+                <img
+                  src={seLogoEn}
+                  alt="Saudi Electricity Company"
+                  style={{ width:"30mm", maxHeight:"22mm", height:"auto", objectFit:"contain", display:"block", margin:"0 auto" }}
+                />
+              </td>
+              <td colSpan={6} style={{
+                border:"1px solid #333", background:"#003087", color:"#FFFFFF",
+                textAlign:"center", verticalAlign:"middle", padding:"3mm 2mm",
+              }}>
+                <div style={{ fontSize:"12pt", fontWeight:"bold", letterSpacing:"0.03em" }}>SHUQAIQ POWER PLANT</div>
+                <div style={{ fontSize:"9pt", fontWeight:"bold", textDecoration:"underline", marginTop:"1mm" }}>
+                  PURCHASE REQUEST UNDER CURRENT CONTRACT
+                </div>
+                <div style={{ fontSize:"7pt", color:"rgba(255,255,255,0.8)", marginTop:"1mm" }}>طلب شراء تحت العقد الحالي</div>
+              </td>
+            </tr>
+            {/* ③ PR / Contract / Date */}
+            <tr>
+              <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", background:"#F0F0F0", fontWeight:"bold", fontSize:"7pt", whiteSpace:"nowrap", width:"20mm" }}>PR NO.</td>
+              <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontWeight:"bold", color:"#00008B", fontSize:"7pt", width:"38mm" }}>{r.id}</td>
+              <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", background:"#F0F0F0", fontWeight:"bold", fontSize:"7pt", whiteSpace:"nowrap", width:"30mm" }}>CONTRACT NO:</td>
+              <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontSize:"7pt", width:"60mm" }}>{r.contractNo||""}</td>
+              <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", background:"#F0F0F0", fontWeight:"bold", fontSize:"7pt", whiteSpace:"nowrap", width:"20mm" }}>DATE (G):</td>
+              <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontSize:"7pt" }}>{r.date||""}</td>
+            </tr>
+            {/* ④ Power Plant / Contractor */}
+            <tr>
+              <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", background:"#F0F0F0", fontWeight:"bold", fontSize:"7pt", whiteSpace:"nowrap" }}>POWER PLANT:</td>
+              <td colSpan={3} style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontWeight:"bold", fontSize:"7pt" }}>SHUQAIQ STEAM POWER PLANT</td>
+              <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", background:"#F0F0F0", fontWeight:"bold", fontSize:"7pt", whiteSpace:"nowrap" }}>CONTRACTOR NAME:</td>
+              <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontWeight:"bold", fontSize:"7pt" }}>{r.contractor||""}</td>
+            </tr>
+          </tbody>
         </table>
 
         {/* ⑤ Workplace */}
-        <table style={{ marginTop:"-1px" }}>
+        <table style={{ width:"100%", borderCollapse:"collapse", marginTop:"-1px" }}>
           <tbody><tr>
-            <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontWeight:"bold", fontSize:"7pt", width:"22mm", whiteSpace:"nowrap" }}>Workplace:</td>
+            <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontWeight:"bold", fontSize:"7pt", background:"#F0F0F0", whiteSpace:"nowrap", width:"22mm" }}>Workplace:</td>
             {[["Unit 1","unit 1"],["Unit 2","unit 2"],["Unit 3","unit 3"],["Unit 4","unit 4"],["BOP","bop"],["Admin","admin"]].map(([label,key])=>(
-              <td key={key} style={{ border:"1px solid #333", padding:"1.5mm 3mm", fontSize:"7pt", whiteSpace:"nowrap" }}>
+              <td key={key} style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontSize:"7pt", whiteSpace:"nowrap", textAlign:"center" }}>
                 <CB checked={wp(key)}/>{label}
               </td>
             ))}
@@ -142,20 +149,20 @@ export const PrintTemplate = forwardRef<HTMLDivElement, Props>(({ request: r }, 
         </table>
 
         {/* ⑥ Work Type */}
-        <table style={{ marginTop:"-1px" }}>
+        <table style={{ width:"100%", borderCollapse:"collapse", marginTop:"-1px" }}>
           <tbody><tr>
-            <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontWeight:"bold", fontSize:"7pt", width:"28mm", whiteSpace:"nowrap" }}>Type &amp; Select One:</td>
+            <td style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontWeight:"bold", fontSize:"7pt", background:"#F0F0F0", whiteSpace:"nowrap", width:"26mm" }}>Type &amp; Select One:</td>
             {[
               ["Manpower","Manpower"],
               ["Repair","Repairs"],
-              ["Safety Observation","Safety Observation"],
+              ["Safety Obs.","Safety Observation"],
               ["PM work","PM work"],
               ["CM work","CM work"],
               ["Outage Work","Outage Work"],
               ["Contract Line Item","contractLineItem"],
               ["Quotation","Quotation"],
             ].map(([label,key])=>(
-              <td key={key} style={{ border:"1px solid #333", padding:"1.5mm 2mm", fontSize:"6.5pt", whiteSpace:"nowrap" }}>
+              <td key={key} style={{ border:"1px solid #333", padding:"1.5mm 1.5mm", fontSize:"6.5pt", whiteSpace:"nowrap", textAlign:"center" }}>
                 <CB checked={wt(label) || wt(key)}/>{label}
               </td>
             ))}

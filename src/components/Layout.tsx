@@ -2,25 +2,8 @@ import React, { useState } from "react";
 import { COLORS, FONT_FAMILY } from "../theme";
 import { useLang } from "../context/LanguageContext";
 import { useUser, getInitials, getDisplayName, getDepartment } from "../context/UserContext";
-
-const SELogo = () => (
-  <svg viewBox="0 0 1179.71 1019.62" style={{ width:34, height:34, flexShrink:0 }} xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="se-a" x1="407.99" y1="252.18" x2="617.91" y2="529.87" gradientUnits="userSpaceOnUse">
-        <stop offset=".56" stopColor="#32c2ff"/><stop offset=".97" stopColor="#0076ff"/>
-      </linearGradient>
-      <radialGradient id="se-b" cx="325.33" cy="457.96" r="188.97" gradientUnits="userSpaceOnUse">
-        <stop offset=".15" stopColor="#0027b9"/><stop offset="1" stopColor="#0080ff"/>
-      </radialGradient>
-      <linearGradient id="se-c" x1="695.81" y1="553.32" x2="1006" y2="223.13" gradientUnits="userSpaceOnUse">
-        <stop offset=".12" stopColor="#00ff86"/><stop offset=".94" stopColor="#0076ff"/>
-      </linearGradient>
-    </defs>
-      <path fill="url(#se-a)" d="M540.31,454.83h-114.53c-75.05,0-117.32-37.86-148.75-80.21h0c16.82,22.93,32.49,51.08,48.13,80.27,9.24,17.26,18.48,34.88,27.92,51.99,36.83,66.74,76.89,102.86,133.7,102.86,45.2,0,86.9-31.35,129.13-101.73,10.17-16.95,20.37-34.83,30.66-53.12,23.49-41.75,47.42-85.59,72.48-125.17h0c-36.58,56.75-77.12,125.12-178.74,125.12Z"/>
-      <path fill="url(#se-b)" d="M277.03,374.62c-43.39-59.17-74.88-55.14-87.18-51.12v131.39h135.31c-15.63-29.18-31.31-57.33-48.13-80.27Z"/>
-      <path fill="url(#se-c)" d="M719.05,329.71c-25.06,39.59-48.99,83.42-72.48,125.17h343.09v-247.35c-116.04-43.7-188.42-7.68-270.61,122.18Z"/>
-  </svg>
-);
+import seLogoEn from "../pages/images/AW_SE_LOGO_PRIM_EN_RGB.svg";
+import seLogoAr from "../pages/images/AW_SE_LOGO_PRIM_AR_RGB.svg";
 
 export const Layout: React.FC<{
   active: string;
@@ -84,7 +67,11 @@ export const Layout: React.FC<{
         <div style={{ padding:"18px 12px 14px", borderBottom:"1px solid rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           {!collapsed && (
             <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
-              <SELogo/>
+              <img
+                src={isAr ? seLogoAr : seLogoEn}
+                alt="Saudi Electricity"
+                style={{ height:38, width:"auto", flexShrink:0, filter:"brightness(0) invert(1)" }}
+              />
               <div style={{ minWidth:0 }}>
                 <div style={{ fontSize:12, fontWeight:800, color:"#FFF", letterSpacing:"0.02em", whiteSpace:"nowrap" }}>
                   Shuqaiq Power Plant
@@ -97,7 +84,11 @@ export const Layout: React.FC<{
           )}
           {collapsed && (
             <div style={{ display:"flex", justifyContent:"center", width:"100%" }}>
-              <SELogo/>
+              <img
+                src={isAr ? seLogoAr : seLogoEn}
+                alt="Saudi Electricity"
+                style={{ height:30, width:"auto", filter:"brightness(0) invert(1)" }}
+              />
             </div>
           )}
           {!collapsed && (
