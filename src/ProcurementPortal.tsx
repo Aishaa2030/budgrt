@@ -6,6 +6,7 @@ import { Dashboard }         from "./pages/Dashboard";
 import { RequestsList }      from "./pages/Requests";
 import { NewRequestWizard }  from "./pages/NewRequestWizard";
 import { ApprovalsView }     from "./pages/ApprovalsView";
+import { JCC }               from "./pages/JCC";
 import { RequestDetails }    from "./pages/RequestDetails";
 import { MOCK_REQUESTS }     from "./pages/mockData";
 import { fetchRequests, approveRequest, rejectRequest } from "./services/dataverseService";
@@ -89,6 +90,8 @@ export default function ProcurementPortal() {
               onReject={handleReject}
             />
           )}
+
+          {active === "jcc" && <JCC />}
 
         </Layout>
       </UserProvider>

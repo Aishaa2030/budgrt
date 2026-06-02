@@ -21,6 +21,7 @@ export const Layout: React.FC<{
     { key:"requests",  icon:"📋", label: t("Purchase Requests",         "طلبات الشراء"),    sub: t("All Records","جميع السجلات") },
     { key:"new",       icon:"✦",  label: t("New Purchase Request",      "طلب شراء جديد"),   sub: t("Create New","إنشاء جديد") },
     { key:"approvals", icon:"✅", label: t("Approval Workflow",         "سير الموافقات"),   sub: t("Pending Actions","الإجراءات المعلقة") },
+    { key:"jcc",       icon:"📜", label: t("Job Completion Certificate","شهادة الإنجاز"),   sub: t("JCC","شهادة الإنجاز") },
   ];
 
   const pageTitle = NAV.find(n => n.key === active)?.label ?? t("Operations Dashboard","لوحة العمليات");
