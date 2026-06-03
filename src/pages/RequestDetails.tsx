@@ -45,7 +45,7 @@ export const RequestDetails: React.FC<Props> = ({ request: r, onBack, onApprove,
     contentRef: printRef,
     documentTitle: `${r.id} — Shuqaiq Purchase Request`,
     pageStyle: `
-      @page { size: A4 landscape; margin: 7mm; }
+      @page { size: A4 portrait; margin: 8mm; }
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     `,
   });

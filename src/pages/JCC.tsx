@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import seLogo from "./images/AW_SE_LOGO_PRIM_EN_RGB.svg";
+import { sanitize } from "../utils/sanitize";
 
 interface JCCForm {
   // Header
@@ -48,6 +49,32 @@ const EMPTY: JCCForm = {
 
 // ── PDF BUILDER — matches Excel JCC format EXACTLY ──
 function buildJCCPDF(f: JCCForm): string {
+  if (import.meta.env.DEV) {
+    console.log("[PDF Debug] JCC Data:", JSON.stringify(f, null, 2));
+  }
+
+  // Sanitize all user-entered fields before injecting into HTML string
+  const sf = {
+    contractNo:            sanitize(f.contractNo),
+    serviceOrderNo:        sanitize(f.serviceOrderNo),
+    dateOfContract:        sanitize(f.dateOfContract),
+    contractorName:        sanitize(f.contractorName),
+    location:              sanitize(f.location),
+    siteDeliveryDate:      sanitize(f.siteDeliveryDate),
+    contractPeriodMonths:  sanitize(f.contractPeriodMonths),
+    contractCompletionDate:sanitize(f.contractCompletionDate),
+    actualCompletionDate:  sanitize(f.actualCompletionDate),
+    penaltyPeriod:         sanitize(f.penaltyPeriod),
+    descriptionOfWork:     sanitize(f.descriptionOfWork),
+    remarks:               sanitize(f.remarks),
+    totalCostSAR:          sanitize(f.totalCostSAR),
+    sesReceiverName:       sanitize(f.sesReceiverName),
+    approvalManagerName:   sanitize(f.approvalManagerName),
+    approvalManagerTitle:  sanitize(f.approvalManagerTitle),
+    contractorRepName:     sanitize(f.contractorRepName),
+    sectorHeadName:        sanitize(f.sectorHeadName),
+  };
+
   const border = "1px solid #000";
   const cellStyle = `border:${border};padding:4px 6px;font-family:Arial,sans-serif;font-size:10pt;font-weight:bold;vertical-align:top;`;
   const labelStyle = `${cellStyle}background:#f5f5f5;`;
@@ -79,6 +106,22 @@ function buildJCCPDF(f: JCCForm): string {
     </tr>
   </table>
 
+  <!-- CERTIFICATE TITLE BOX — centered, bordered, matches Excel row 7-8 -->
+  <table style="width:100%;border-collapse:collapse;margin:5mm 0 4mm 0">
+    <tr>
+      <td style="width:25%"></td>
+      <td style="width:50%;border:2px solid #000;padding:6px 16px;text-align:center;vertical-align:middle">
+        <span style="font-family:Arial;font-size:13pt;font-weight:bold;font-style:italic;display:block;margin-bottom:3px;letter-spacing:0.03em">
+          شـهـادة إنـجـاز عـمـل
+        </span>
+        <span style="font-family:Arial;font-size:12pt;font-weight:bold;display:block;letter-spacing:0.08em;white-space:nowrap">
+          JOB COMPLETION CERTIFICATE
+        </span>
+      </td>
+      <td style="width:25%"></td>
+    </tr>
+  </table>
+
   <!-- MAIN FORM TABLE -->
   <table style="width:100%;border-collapse:collapse">
 
@@ -88,8 +131,8 @@ function buildJCCPDF(f: JCCForm): string {
       <td colspan="2" style="${labelStyle}width:50%;text-align:right">رقم العقد / التعميد:</td>
     </tr>
     <tr>
-      <td colspan="2" style="${cellStyle}">${f.contractNo || ""}${f.serviceOrderNo ? " / " + f.serviceOrderNo : ""}</td>
-      <td colspan="2" style="${cellStyle};text-align:center">${f.serviceOrderNo || ""}${f.contractNo ? " / " + f.contractNo : ""}</td>
+      <td colspan="2" style="${cellStyle}">${sf.contractNo || ""}${sf.serviceOrderNo ? " / " + sf.serviceOrderNo : ""}</td>
+      <td colspan="2" style="${cellStyle};text-align:center">${sf.serviceOrderNo || ""}${sf.contractNo ? " / " + sf.contractNo : ""}</td>
     </tr>
 
     <!-- Date of Contract Row -->
@@ -99,7 +142,7 @@ function buildJCCPDF(f: JCCForm): string {
       <td style="${labelStyle};text-align:right">تاريخ العقد</td>
     </tr>
     <tr>
-      <td colspan="2" style="${cellStyle}">${f.dateOfContract || ""}</td>
+      <td colspan="2" style="${cellStyle}">${sf.dateOfContract || ""}</td>
       <td colspan="2" style="${cellStyle}"></td>
     </tr>
 
@@ -109,23 +152,23 @@ function buildJCCPDF(f: JCCForm): string {
       <td colspan="2" style="${labelStyle};text-align:right">إسم المقاول:</td>
     </tr>
     <tr>
-      <td colspan="2" style="${cellStyle}">${f.contractorName || ""}</td>
+      <td colspan="2" style="${cellStyle}">${sf.contractorName || ""}</td>
       <td colspan="2" style="${cellStyle}"></td>
     </tr>
 
     <!-- Location Row -->
     <tr>
-      <td colspan="2" style="${labelStyle}">Location:<br/>${f.location || "SSPP"}</td>
+      <td colspan="2" style="${labelStyle}">Location:<br/>${sf.location || "SSPP"}</td>
       <td colspan="2" style="${labelStyle};text-align:right">الموقع:<br/>محطة طاقة الشقيق البخارية</td>
     </tr>
 
     <!-- Site Delivery Date Row -->
     <tr>
-      <td colspan="2" style="${labelStyle}">Site Delivery Date:<br/>${f.siteDeliveryDate || ""}</td>
+      <td colspan="2" style="${labelStyle}">Site Delivery Date:<br/>${sf.siteDeliveryDate || ""}</td>
       <td colspan="2" style="${labelStyle};text-align:right">تاريخ إستلام الموقع:<br/></td>
     </tr>
     <tr>
-      <td colspan="2" style="${cellStyle}">${f.siteDeliveryDate || ""}</td>
+      <td colspan="2" style="${cellStyle}">${sf.siteDeliveryDate || ""}</td>
       <td colspan="2" style="${cellStyle}"></td>
     </tr>
 
@@ -135,7 +178,7 @@ function buildJCCPDF(f: JCCForm): string {
       <td colspan="2" style="${labelStyle};text-align:right">مدة العقد:</td>
     </tr>
     <tr>
-      <td style="${cellStyle}">${f.contractPeriodMonths || ""}</td>
+      <td style="${cellStyle}">${sf.contractPeriodMonths || ""}</td>
       <td style="${cellStyle}">Months</td>
       <td style="${cellStyle};text-align:right">أشهر</td>
       <td style="${cellStyle}"></td>
@@ -147,7 +190,7 @@ function buildJCCPDF(f: JCCForm): string {
       <td colspan="2" style="${labelStyle};text-align:right">تاريخ إنتهاء العقد:</td>
     </tr>
     <tr>
-      <td colspan="2" style="${cellStyle}">${f.contractCompletionDate || ""}</td>
+      <td colspan="2" style="${cellStyle}">${sf.contractCompletionDate || ""}</td>
       <td colspan="2" style="${cellStyle}"></td>
     </tr>
 
@@ -157,14 +200,14 @@ function buildJCCPDF(f: JCCForm): string {
       <td colspan="2" style="${labelStyle};text-align:right">التاريخ الفعلي للإنتهاء:</td>
     </tr>
     <tr>
-      <td colspan="2" style="${cellStyle}">${f.actualCompletionDate || ""}</td>
+      <td colspan="2" style="${cellStyle}">${sf.actualCompletionDate || ""}</td>
       <td colspan="2" style="${cellStyle}"></td>
     </tr>
 
     <!-- Penalty Period Row -->
     <tr>
-      <td colspan="2" style="${labelStyle}">Penalty Period, if applicable: ${f.penaltyPeriod || "N/A"}</td>
-      <td colspan="2" style="${labelStyle};text-align:right">مدة العقوبة إذا ماطبقت: ${f.penaltyPeriod === "N/A" ? "لا يوجد" : f.penaltyPeriod || "لا يوجد"}</td>
+      <td colspan="2" style="${labelStyle}">Penalty Period, if applicable: ${sf.penaltyPeriod || "N/A"}</td>
+      <td colspan="2" style="${labelStyle};text-align:right">مدة العقوبة إذا ماطبقت: ${f.penaltyPeriod === "N/A" ? "لا يوجد" : sf.penaltyPeriod || "لا يوجد"}</td>
     </tr>
 
     <!-- Description of Work Row -->
@@ -173,7 +216,7 @@ function buildJCCPDF(f: JCCForm): string {
       <td colspan="2" style="${labelStyle};text-align:right">وصف الأعمال المستلمة:</td>
     </tr>
     <tr>
-      <td colspan="2" style="${cellStyle};min-height:40px;white-space:pre-wrap">${f.descriptionOfWork || ""}</td>
+      <td colspan="2" style="${cellStyle};min-height:40px;white-space:pre-wrap">${sf.descriptionOfWork || ""}</td>
       <td colspan="2" style="${cellStyle}"></td>
     </tr>
 
@@ -183,13 +226,13 @@ function buildJCCPDF(f: JCCForm): string {
       <td colspan="2" style="${labelStyle};text-align:right">ملاحظات:</td>
     </tr>
     <tr>
-      <td colspan="2" style="${cellStyle};min-height:30px">${f.remarks || ""}</td>
+      <td colspan="2" style="${cellStyle};min-height:30px">${sf.remarks || ""}</td>
       <td colspan="2" style="${cellStyle}"></td>
     </tr>
 
     <!-- Total Cost Row -->
     <tr>
-      <td colspan="2" style="${cellStyle};white-space:pre-wrap">Work Done\nBy Total Cost Of\n${f.totalCostSAR || "0.00"} SAR</td>
+      <td colspan="2" style="${cellStyle};white-space:pre-wrap">Work Done\nBy Total Cost Of\n${sf.totalCostSAR || "0.00"} SAR</td>
       <td colspan="2" style="${cellStyle};text-align:right;white-space:pre-wrap">تم اداء الاعمال\nبمبلغ اجمالي</td>
     </tr>
 
@@ -200,8 +243,8 @@ function buildJCCPDF(f: JCCForm): string {
       <td style="${labelStyle};text-align:right">مستلم الصحيفة</td>
     </tr>
     <tr>
-      <td colspan="2" style="${cellStyle}">sign</td>
-      <td style="${cellStyle}"></td>
+      <td colspan="2" style="${cellStyle}">${sf.sesReceiverName || ""}</td>
+      <td style="${cellStyle}">${sf.contractorRepName || ""}</td>
       <td style="${cellStyle};text-align:right">التوقيع</td>
     </tr>
 
@@ -227,7 +270,7 @@ function buildJCCPDF(f: JCCForm): string {
         مدير ادارة المساندة الفنية :
       </td>
       <td style="border:1px solid #000;padding:5px 8px;width:35%;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
-        ${f.approvalManagerName || ""}
+        ${sf.approvalManagerName || ""}
       </td>
       <td style="border:1px solid #000;padding:5px 8px;width:15%;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
         الاسم<br/>Name
@@ -239,7 +282,7 @@ function buildJCCPDF(f: JCCForm): string {
       <td style="border:1px solid #000;padding:5px 6px;height:25px"></td>
       <td style="border:1px solid #000;padding:5px 8px"></td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
-        ${f.approvalManagerTitle || "Project Manager"}
+        ${sf.approvalManagerTitle || "Project Manager"}
       </td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
         الوظيفة<br/>Job Title
@@ -261,7 +304,7 @@ function buildJCCPDF(f: JCCForm): string {
         رئيس قطاع محطة طاقة الشقيق :
       </td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold">
-        ${f.sectorHeadName || ""}
+        ${sf.sectorHeadName || ""}
       </td>
       <td rowspan="4" style="border:1px solid #000;padding:5px 8px;text-align:center;font-family:Arial;font-size:10pt;font-weight:bold;vertical-align:middle">
         التوقيع<br/>Sign
@@ -373,6 +416,7 @@ function Section({ title, icon, children }: {
 
 // ── PDF PREVIEW MODAL ──
 function JCCModal({ form, onClose }: { form: JCCForm; onClose: () => void }) {
+  console.log("JCC Form data:", JSON.stringify(form, null, 2));
   const html = buildJCCPDF(form);
 
   const print = () => {

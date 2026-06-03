@@ -17,6 +17,14 @@ export interface PRRequest {
   totalExpPct: string; priceAccept: string; materialComment: string;
   certifiedRec: string;
   rejectionReason?: string;
+  // Extended fields (optional — populated by new wizard)
+  workerNumber?: string;
+  planType?: string;
+  balance?: string;
+  contractLineItem?: boolean;
+  quotation?: boolean;
+  materialThruBudget?: boolean;
+  safetyObsNum?: string;
 }
 
 export const MOCK_REQUESTS: PRRequest[] = [

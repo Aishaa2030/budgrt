@@ -52,13 +52,36 @@ const COL = {
   totalExpPct:     "crf19_totalexpenditurepct",
   priceAccept:     "crf19_priceacceptance",
   materialComment: "crf19_materialcomment",
-  certifiedRec:    "crf19_certifiedrecommendation",
-  rejectionReason: "crf19_rejectionreason",
+  certifiedRec:       "crf19_certifiedrecommendation",
+  rejectionReason:    "crf19_rejectionreason",
+  workerNumber:       "crf19_workordernumber",
+  contractLineItem:   "crf19_contractlineitem",
+  quotation:          "crf19_quotation",
+  materialThruBudget: "crf19_materialthroubudget",
+  safetyObsNum:       "crf19_safetyobsnum",
 } as const;
+
+// ── Token storage ─────────────────────────────────────────────────────────────
+let _token = "";
+
+export function setToken(t: string) {
+  if (!t) {
+    console.warn("[Dataverse] No auth token provided");
+    return;
+  }
+  _token = t;
+  if (import.meta.env.DEV) {
+    console.log("[Dataverse] Token set — length:", t.length);
+  }
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function str(v: unknown): string {
   return v == null ? "" : String(v);
+}
+
+function bool(v: unknown): boolean {
+  return v === true || v === "true" || v === "Yes";
 }
 
 function mapFromDataverse(row: Record<string, unknown>): PRRequest {
@@ -102,8 +125,13 @@ function mapFromDataverse(row: Record<string, unknown>): PRRequest {
     totalExpPct:     str(row[COL.totalExpPct]),
     priceAccept:     str(row[COL.priceAccept]),
     materialComment: str(row[COL.materialComment]),
-    certifiedRec:    str(row[COL.certifiedRec]),
-    rejectionReason: str(row[COL.rejectionReason]) || undefined,
+    certifiedRec:       str(row[COL.certifiedRec]),
+    rejectionReason:    str(row[COL.rejectionReason]) || undefined,
+    workerNumber:       str(row[COL.workerNumber]) || undefined,
+    contractLineItem:   bool(row[COL.contractLineItem]),
+    quotation:          bool(row[COL.quotation]),
+    materialThruBudget: bool(row[COL.materialThruBudget]),
+    safetyObsNum:       str(row[COL.safetyObsNum]) || undefined,
   };
 }
 
@@ -143,34 +171,59 @@ function mapToDataverse(req: Partial<PRRequest>): Record<string, unknown> {
   set(COL.totalExpPct,    req.totalExpPct);
   set(COL.priceAccept,    req.priceAccept);
   set(COL.materialComment, req.materialComment);
-  set(COL.certifiedRec,   req.certifiedRec);
-  set(COL.rejectionReason, req.rejectionReason);
+  set(COL.certifiedRec,       req.certifiedRec);
+  set(COL.rejectionReason,    req.rejectionReason);
+  set(COL.workerNumber,       req.workerNumber);
+  set(COL.contractLineItem,   req.contractLineItem);
+  set(COL.quotation,          req.quotation);
+  set(COL.materialThruBudget, req.materialThruBudget);
+  set(COL.safetyObsNum,       req.safetyObsNum);
   if (req.scopeRows !== undefined) out[COL.scopeRows] = JSON.stringify(req.scopeRows);
 
   return out;
+}
+
+// ── Safe fetch with 30s timeout ───────────────────────────────────────────────
+async function safeFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => "Unknown error");
+      throw new Error(`API Error ${res.status}: ${errorText.slice(0, 200)}`);
+    }
+    return res;
+  } catch (err) {
+    if ((err as Error).name === "AbortError") {
+      throw new Error("Request timed out after 30 seconds");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function dvFetch(path: string, options: RequestInit = {}): Promise<Record<string, unknown> | null> {
   const base = getApiBase();
   if (!base || base === "/api/data/v9.2") throw new Error("Dataverse URL not configured");
 
-  const res = await fetch(`${base}/${path}`, {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    "OData-MaxVersion": "4.0",
+    "OData-Version": "4.0",
+    Prefer: "return=representation",
+    ...(options.headers as Record<string, string> | undefined),
+  };
+  if (_token) headers["Authorization"] = `Bearer ${_token}`;
+
+  const res = await safeFetch(`${base}/${path}`, {
     ...options,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "OData-MaxVersion": "4.0",
-      "OData-Version": "4.0",
-      Prefer: "return=representation",
-      ...(options.headers as Record<string, string> | undefined),
-    },
+    headers,
   });
 
-  if (!res.ok) {
-    const msg = await res.text().catch(() => res.statusText);
-    throw new Error(`Dataverse ${options.method ?? "GET"} /${path} → ${res.status}: ${msg}`);
-  }
   if (res.status === 204) return null;
   return res.json() as Promise<Record<string, unknown>>;
 }
