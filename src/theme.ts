@@ -11,6 +11,14 @@ export const COLORS = {
   rejected: "#B71C1C",
   draft: "#8A96A3",
   waiting: "#B0BAC4",
+  text: "#0D1B2E",
+  textMuted: "#6B85A3",
+  danger: "#B71C1C",
+  dangerBg: "#FEF0F0",
+  dangerBdr: "#F5A0A0",
+  success: "#1A7F3C",
+  successBg: "#EDF7F0",
+  successBdr: "#9DDFB3",
 };
 
 export const FONT_FAMILY = "'Segoe UI','SF Pro Display','sans-serif',Arial,Helvetica";

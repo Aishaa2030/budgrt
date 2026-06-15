@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { PRRequest } from "./mockData";
+import { MOCK_REQUESTS as REQUESTS } from "./mockData";
+import { getRequests } from "../services/sharepointService";
 
 function KPICard({ icon, labelAr, labelEn, value, color, onClick }: {
   icon: string; labelAr: string; labelEn: string;
@@ -73,7 +75,17 @@ interface DashboardProps {
   onNavigate?: (k: string, r?: PRRequest) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ requests, isLive = false, onNavigate }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ requests: propRequests, isLive = false, onNavigate }) => {
+  const [requests, setRequests] = useState<PRRequest[]>(propRequests);
+  const [source, setSource] = useState<"live" | "mock">("mock");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getRequests()
+      .then(data => { if (data?.length) { setRequests(data); setSource("live"); } })
+      .catch(() => { setRequests(REQUESTS); setSource("mock"); })
+      .finally(() => setLoading(false));
+  }, []);
 
   const total       = requests.length;
   const pending     = requests.filter(r => r.status === "pending").length;
@@ -100,12 +112,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ requests, isLive = false, 
         </div>
         <div style={{
           display:"flex", alignItems:"center", gap:6, padding:"5px 13px", borderRadius:20,
-          background: isLive ? "#EDF7F0" : "#FEF8E7",
-          border: `1px solid ${isLive ? "#9DDFB3" : "#F0C843"}`,
-          fontSize:11, fontWeight:700, color: isLive ? "#1A7F3C" : "#8B5E00",
+          background: source === "live" ? "#EDF7F0" : "#FEF8E7",
+          border: `1px solid ${source === "live" ? "#9DDFB3" : "#F0C843"}`,
+          fontSize:11, fontWeight:700, color: source === "live" ? "#1A7F3C" : "#8B5E00",
         }}>
-          <span style={{ width:7, height:7, borderRadius:"50%", background: isLive ? "#1A7F3C" : "#C47A00" }}/>
-          {isLive ? "🟢 Dataverse Live" : "🟡 Mock Data"}
+          <span style={{ width:7, height:7, borderRadius:"50%", background: source === "live" ? "#1A7F3C" : "#C47A00" }}/>
+          {source === "live" ? "🟢 SharePoint Live" : loading ? "⏳ Loading…" : "🟡 Mock Data"}
         </div>
       </div>
 

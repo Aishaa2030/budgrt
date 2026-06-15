@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createRequest } from "../services/dataverseService";
+import { createRequest as spCreateRequest } from "../services/sharepointService";
 import { getCurrentUser } from "../services/userService";
 import type { PRRequest } from "./mockData";
 
@@ -703,6 +704,11 @@ export const NewRequestWizard: React.FC<Props> = ({ onDone }) => {
       safetyObsNum:F.safetyObsNum||undefined,
     };
     setSubmitting(true);
+    try {
+      await spCreateRequest(F as Record<string, unknown>);
+    } catch (e) {
+      console.error("SP save failed:", e);
+    }
     const guid = await createRequest(newReq);
     setSubmitting(false);
     alert(guid

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { SC } from "../theme";
 import { useLang } from "../context/LanguageContext";
 import { getCurrentUser } from "../services/userService";
+import { updateRequestStatus } from "../services/sharepointService";
 import type { PRRequest } from "./mockData";
 
 interface Props {
@@ -56,7 +57,13 @@ export const ApprovalsView: React.FC<Props> = ({ requests, onSelect, onApprove, 
   const pending = requests.filter(r => r.status === "pending" || r.status === "review");
 
   const handleApprove = async (id: string) => {
+    const req = pending.find(r => r.id === id);
     setBusy(id);
+    if (req?._spId) {
+      try {
+        await updateRequestStatus(req._spId as number, "approved", "", adminName, getStepIndex(adminRole));
+      } catch (e) { console.error("SP update failed:", e); }
+    }
     await onApprove(id);
     setBusy(null);
   };
@@ -65,6 +72,12 @@ export const ApprovalsView: React.FC<Props> = ({ requests, onSelect, onApprove, 
     if (!rejectTarget) return;
     if (!rejectTarget.reason.trim()) return;
     setBusy(rejectTarget.id);
+    const req = pending.find(r => r.id === rejectTarget.id);
+    if (req?._spId) {
+      try {
+        await updateRequestStatus(req._spId as number, "rejected", rejectTarget.reason.trim(), adminName, getStepIndex(adminRole));
+      } catch (e) { console.error("SP update failed:", e); }
+    }
     await onReject(rejectTarget.id, rejectTarget.reason.trim());
     setRejectTarget(null);
     setBusy(null);

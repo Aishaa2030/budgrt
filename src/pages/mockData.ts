@@ -17,6 +17,7 @@ export interface PRRequest {
   totalExpPct: string; priceAccept: string; materialComment: string;
   certifiedRec: string;
   rejectionReason?: string;
+  _spId?: number;
   // Extended fields (optional — populated by new wizard)
   workerNumber?: string;
   planType?: string;

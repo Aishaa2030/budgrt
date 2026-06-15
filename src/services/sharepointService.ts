@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { spfi, SPFx } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
@@ -82,7 +83,7 @@ export async function updateRequestStatus(spId: number, status: string, comment:
 
 function mapItem(item: Record<string, unknown>) {
   return {
-    _spId: item["Id"],
+    _spId: item["Id"] as number,
     id: String(item["PRNumber"] || `PR-${item["Id"]}`),
     date: String(item["Created"] || "").split("T")[0],
     requester: String(item["RequesterName"] || ""),

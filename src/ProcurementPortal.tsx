@@ -8,6 +8,7 @@ import { NewRequestWizard }  from "./pages/NewRequestWizard";
 import { ApprovalsView }     from "./pages/ApprovalsView";
 import { JCC }               from "./pages/JCC";
 import { RequestDetails }    from "./pages/RequestDetails";
+import { PRUsersPage }       from "./pages/PRUsers";
 import { MOCK_REQUESTS }     from "./pages/mockData";
 import { fetchRequests, approveRequest, rejectRequest } from "./services/dataverseService";
 import type { PRRequest }    from "./pages/mockData";
@@ -92,6 +93,8 @@ export default function ProcurementPortal() {
           )}
 
           {active === "jcc" && <JCC />}
+
+          {active === "users" && <PRUsersPage />}
 
         </Layout>
       </UserProvider>

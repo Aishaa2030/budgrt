@@ -1,7 +1,7 @@
 export const SP_CONFIG = {
-  siteUrl: import.meta.env.VITE_SP_SITE_URL || "https://YourTenant.sharepoint.com/sites/YourSite",
+  siteUrl: "https://seccomsa.sharepoint.com/sites/EmployeeTasks",
   listsNames: {
-    requests: "ProcurementRequests",
+    requests: "Budgrt",
     jcc: "JCCRecords",
     users: "PRUsers",
   },
