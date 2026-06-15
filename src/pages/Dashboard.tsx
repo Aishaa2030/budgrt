@@ -5,39 +5,62 @@ import { MOCK_REQUESTS as REQUESTS } from "./mockData";
 async function loadFromSharePoint(): Promise<any[]> {
   const siteUrl = "https://seccomsa.sharepoint.com/sites/EmployeeTasks";
   const listName = "Budgrt";
+
   const res = await fetch(
-    `${siteUrl}/_api/web/lists/getbytitle('${listName}')/items?$orderby=Created desc&$top=100&$select=Id,Title,PRNumber,ContractNo,Contractor,Department,WorkType,Workplace,Amount,Status,Priority,RequesterName,CostCenter,FundingSource,ShortDesc,ScopeJSON,ApprovalsJSON,Created`,
+    `${siteUrl}/_api/web/lists/getbytitle('${encodeURIComponent(listName)}')/items?$orderby=Created%20desc&$top=100&$select=Id,Title,PRNumber,ContractNo,Contractor,Department,WorkType,Workplace,Amount,Status,Priority,RequesterName,CostCenter,CostElement,FundingSource,ShortDesc,ScopeJSON,ApprovalsJSON,SafetyEnv,OpEfficiency,Created`,
     {
       credentials: "include",
-      headers: { "Accept": "application/json;odata=verbose" },
+      mode: "cors",
+      headers: {
+        "Accept": "application/json;odata=verbose",
+      },
     }
   );
+
   if (!res.ok) throw new Error(`SP fetch failed: ${res.status}`);
   const data = await res.json();
-  return data.d.results.map((item: any) => ({
+
+  return (data.d?.results || []).map((item: any) => ({
     _spId:        item.Id,
     id:           item.PRNumber || `PR-${item.Id}`,
     date:         item.Created?.split("T")[0] || "",
     requester:    item.RequesterName || "",
     dept:         item.Department || "",
     contractor:   item.Contractor || "",
-    status:       (item.Status || "draft").toLowerCase(),
-    priority:     (item.Priority || "medium").toLowerCase(),
+    status:       String(item.Status || "draft").toLowerCase(),
+    priority:     String(item.Priority || "medium").toLowerCase(),
     type:         item.WorkType || "",
     unit:         item.Workplace || "",
     amount:       parseFloat(item.Amount) || 0,
     desc:         item.Title || "",
     contractNo:   item.ContractNo || "",
+    division:     "",
     costCenter:   item.CostCenter || "",
+    costElement:  item.CostElement || "",
+    workplace:    item.Workplace || "",
+    workType:     item.WorkType || "",
+    idNumber:     "",
+    safetyEnv:    item.SafetyEnv || "",
+    opEfficiency: item.OpEfficiency || "",
+    safetyObs:    "No",
+    safetyObsNum: "",
+    affectsGen:   "No",
+    sparePart:    "No",
     fundingSource:item.FundingSource || "",
+    workStatus:   "",
     shortDesc:    item.ShortDesc || "",
     scopeRows:    (() => { try { return JSON.parse(item.ScopeJSON || "[]"); } catch { return []; } })(),
     approvals:    (() => { try { return JSON.parse(item.ApprovalsJSON || "[]"); } catch { return []; } })(),
-    division:"", costElement:"", workplace:item.Workplace||"", workType:item.WorkType||"",
-    idNumber:"", safetyEnv:"", opEfficiency:"", safetyObs:"No", safetyObsNum:"",
-    affectsGen:"No", sparePart:"No", workStatus:"", emsIndex:"", contractValue:"",
-    totalExpPct:"", priceAccept:"", materialComment:"", certifiedRec:"",
-    canPostpone:"No", plantCanDo:"No", purchasedBefore:"No", criticalEquip:"No",
+    emsIndex:     "",
+    contractValue:"",
+    totalExpPct:  "",
+    priceAccept:  "",
+    materialComment:"",
+    certifiedRec: "",
+    canPostpone:  "No",
+    plantCanDo:   "No",
+    purchasedBefore:"No",
+    criticalEquip:"No",
   }));
 }
 

@@ -1,23 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { getCurrentUser } from "../services/userService";
 
-async function saveToSharePoint(form: any) {
+async function saveToSharePoint(form: any): Promise<string> {
   const siteUrl = "https://seccomsa.sharepoint.com/sites/EmployeeTasks";
   const listName = "Budgrt";
   const total = (form.scopeRows || []).reduce((s: number, r: any) => s + (parseFloat(r.cost) || 0), 0);
   const prNumber = `PR-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
-  const digestRes = await fetch(`${siteUrl}/_api/contextinfo`, {
-    method: "POST",
-    headers: { "Accept": "application/json;odata=verbose" },
-    credentials: "include",
-  });
-  const digestData = await digestRes.json();
-  const digest = digestData.d.GetContextWebInformation.FormDigestValue;
+  // Try multiple auth approaches
+  let digest = "";
+
+  // Approach 1: Get digest with credentials include
+  try {
+    const digestRes = await fetch(`${siteUrl}/_api/contextinfo`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json;odata=verbose",
+        "Content-Type": "application/json;odata=verbose",
+      },
+      credentials: "include",
+      mode: "cors",
+    });
+    if (digestRes.ok) {
+      const d = await digestRes.json();
+      digest = d.d?.GetContextWebInformation?.FormDigestValue || "";
+    }
+  } catch (e) {
+    console.warn("Digest fetch failed:", e);
+  }
 
   const body = {
     __metadata: { type: "SP.Data.BudgrtListItem" },
-    Title: form.shortDesc || prNumber,
+    Title: String(form.shortDesc || prNumber).slice(0, 255),
     PRNumber: prNumber,
     ContractNo: form.contractNo || "",
     Contractor: form.contractorName || "",
@@ -30,40 +44,43 @@ async function saveToSharePoint(form: any) {
     RequesterName: form.requesterName || "",
     CostCenter: form.costCenter || "",
     CostElement: form.costElement || "",
-    FundingSource: form.fundingSource || "",
+    FundingSource: form.fundingSource || form.planType || "",
     WorkStatus: form.workStatus || "",
-    ShortDesc: form.shortDesc || "",
+    ShortDesc: String(form.shortDesc || "").slice(0, 255),
     ScopeJSON: JSON.stringify(form.scopeRows || []),
+    SafetyEnv: form.safetyEnv || "",
+    OpEfficiency: form.opEfficiency || "",
+    CertifiedRec: form.certifiedRec || "",
     ApprovalsJSON: JSON.stringify([
-      {id:1,role:"Requested By",name:form.requesterName,status:"pending",ts:null,comment:null},
+      {id:1,role:"Requested By",name:form.requesterName||"",status:"pending",ts:null,comment:null},
       {id:2,role:"Section Head",name:"",status:"waiting",ts:null,comment:null},
       {id:3,role:"Division Manager",name:"",status:"waiting",ts:null,comment:null},
       {id:4,role:"Budget Group",name:"",status:"waiting",ts:null,comment:null},
       {id:5,role:"TSD Div. Manager",name:"",status:"waiting",ts:null,comment:null},
       {id:6,role:"SSPP Dept. Manager",name:"",status:"waiting",ts:null,comment:null},
     ]),
-    SafetyEnv: form.safetyEnv || "",
-    OpEfficiency: form.opEfficiency || "",
-    CertifiedRec: form.certifiedRec || "",
   };
 
+  const headers: Record<string, string> = {
+    "Accept": "application/json;odata=verbose",
+    "Content-Type": "application/json;odata=verbose",
+  };
+  if (digest) headers["X-RequestDigest"] = digest;
+
   const res = await fetch(
-    `${siteUrl}/_api/web/lists/getbytitle('${listName}')/items`,
+    `${siteUrl}/_api/web/lists/getbytitle('${encodeURIComponent(listName)}')/items`,
     {
       method: "POST",
       credentials: "include",
-      headers: {
-        "Accept": "application/json;odata=verbose",
-        "Content-Type": "application/json;odata=verbose",
-        "X-RequestDigest": digest,
-      },
+      mode: "cors",
+      headers,
       body: JSON.stringify(body),
     }
   );
 
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`SharePoint error: ${res.status} — ${err.slice(0, 200)}`);
+    const errText = await res.text().catch(() => res.statusText);
+    throw new Error(`${res.status}: ${errText.slice(0, 300)}`);
   }
 
   return prNumber;
