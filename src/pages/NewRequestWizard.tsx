@@ -753,13 +753,15 @@ export const NewRequestWizard: React.FC<Props> = ({ onDone }) => {
     setSubmitting(true);
     try {
       const prNum = await saveToSharePoint(F);
+      setSubmitting(false);
       notify(`✓ تم حفظ الطلب ${prNum} في SharePoint بنجاح!`);
+      setTimeout(onDone, 2500);
     } catch (e) {
       console.error("SharePoint save failed:", e);
-      notify(`⚠ تم إرسال الطلب محلياً — ${String(e).slice(0, 80)}`);
+      setSubmitting(false);
+      notify(`⚠ فشل الحفظ في SharePoint — ${String(e).slice(0, 80)}`);
+      // Stay on form so user can retry
     }
-    setSubmitting(false);
-    setTimeout(onDone, 1500);
   };
 
   return (
