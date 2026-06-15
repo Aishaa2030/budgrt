@@ -2,32 +2,67 @@ import React, { useState, useEffect } from "react";
 import { getCurrentUser } from "../services/userService";
 
 async function saveToSharePoint(form: any): Promise<string> {
-  const siteUrl = "https://seccomsa.sharepoint.com/sites/EmployeeTasks";
-  const listName = "Budgrt";
-  const total = (form.scopeRows || []).reduce((s: number, r: any) => s + (parseFloat(r.cost) || 0), 0);
   const prNumber = `PR-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+  const total = (form.scopeRows || []).reduce(
+    (s: number, r: any) => s + (parseFloat(r.cost) || 0), 0
+  );
 
-  // Try multiple auth approaches
-  let digest = "";
+  // Use Power Apps PCF context if available
+  const ctx = (window as any)._pcfContext;
 
-  // Approach 1: Get digest with credentials include
-  try {
-    const digestRes = await fetch(`${siteUrl}/_api/contextinfo`, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json;odata=verbose",
-        "Content-Type": "application/json;odata=verbose",
-      },
-      credentials: "include",
-      mode: "cors",
-    });
-    if (digestRes.ok) {
-      const d = await digestRes.json();
-      digest = d.d?.GetContextWebInformation?.FormDigestValue || "";
+  if (ctx?.webAPI) {
+    // Use Dataverse WebAPI through PCF context
+    try {
+      const record = {
+        "cr_pr_number": prNumber,
+        "cr_contract_no": form.contractNo || "",
+        "cr_contractor": form.contractorName || "",
+        "cr_department": form.requesterDept || "",
+        "cr_work_type": form.workType || "",
+        "cr_workplace": form.workplace || "",
+        "cr_amount": total,
+        "cr_status": "pending",
+        "cr_priority": "high",
+        "cr_requester": form.requesterName || "",
+        "cr_cost_center": form.costCenter || "",
+        "cr_cost_element": form.costElement || "",
+        "cr_funding_source": form.fundingSource || form.planType || "",
+        "cr_short_desc": form.shortDesc || "",
+        "cr_scope_json": JSON.stringify(form.scopeRows || []),
+        "cr_safety_env": form.safetyEnv || "",
+        "cr_op_efficiency": form.opEfficiency || "",
+        "cr_certified_rec": form.certifiedRec || "",
+        "cr_affects_gen": form.affectsGen === "Yes",
+        "cr_spare_part": form.sparePart === "Yes",
+        "cr_approvals_json": JSON.stringify([
+          {id:1,role:"Requested By",name:form.requesterName||"",status:"pending",ts:null,comment:null},
+          {id:2,role:"Section Head",name:"",status:"waiting",ts:null,comment:null},
+          {id:3,role:"Division Manager",name:"",status:"waiting",ts:null,comment:null},
+          {id:4,role:"Budget Group",name:"",status:"waiting",ts:null,comment:null},
+          {id:5,role:"TSD Div. Manager",name:"",status:"waiting",ts:null,comment:null},
+          {id:6,role:"SSPP Dept. Manager",name:"",status:"waiting",ts:null,comment:null},
+        ]),
+      };
+      await ctx.webAPI.createRecord("cr_procurement_request", record);
+      return prNumber;
+    } catch (dvErr) {
+      console.warn("Dataverse save failed, trying SharePoint:", dvErr);
     }
-  } catch (e) {
-    console.warn("Digest fetch failed:", e);
   }
+
+  // Fallback: SharePoint REST via same-origin (works in Power Apps iframe)
+  const siteUrl = "https://seccomsa.sharepoint.com/sites/EmployeeTasks";
+
+  // Get digest
+  const digestRes = await fetch(`${siteUrl}/_api/contextinfo`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Accept": "application/json;odata=verbose" },
+  });
+
+  if (!digestRes.ok) throw new Error(`Digest failed: ${digestRes.status}`);
+  const digestData = await digestRes.json();
+  const digest = digestData.d.GetContextWebInformation.FormDigestValue;
 
   const body = {
     __metadata: { type: "SP.Data.BudgrtListItem" },
@@ -61,26 +96,23 @@ async function saveToSharePoint(form: any): Promise<string> {
     ]),
   };
 
-  const headers: Record<string, string> = {
-    "Accept": "application/json;odata=verbose",
-    "Content-Type": "application/json;odata=verbose",
-  };
-  if (digest) headers["X-RequestDigest"] = digest;
-
   const res = await fetch(
-    `${siteUrl}/_api/web/lists/getbytitle('${encodeURIComponent(listName)}')/items`,
+    `${siteUrl}/_api/web/lists/getbytitle('Budgrt')/items`,
     {
       method: "POST",
-      credentials: "include",
-      mode: "cors",
-      headers,
+      credentials: "same-origin",
+      headers: {
+        "Accept": "application/json;odata=verbose",
+        "Content-Type": "application/json;odata=verbose",
+        "X-RequestDigest": digest,
+      },
       body: JSON.stringify(body),
     }
   );
 
   if (!res.ok) {
     const errText = await res.text().catch(() => res.statusText);
-    throw new Error(`${res.status}: ${errText.slice(0, 300)}`);
+    throw new Error(`SharePoint ${res.status}: ${errText.slice(0, 200)}`);
   }
 
   return prNumber;

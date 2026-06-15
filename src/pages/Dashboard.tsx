@@ -4,63 +4,103 @@ import { MOCK_REQUESTS as REQUESTS } from "./mockData";
 
 async function loadFromSharePoint(): Promise<any[]> {
   const siteUrl = "https://seccomsa.sharepoint.com/sites/EmployeeTasks";
-  const listName = "Budgrt";
 
+  // Try PCF WebAPI first
+  const ctx = (window as any)._pcfContext;
+  if (ctx?.webAPI) {
+    try {
+      const result = await ctx.webAPI.retrieveMultipleRecords(
+        "cr_procurement_request",
+        "?$orderby=createdon desc&$top=100"
+      );
+      return (result.entities || []).map((e: any) => ({
+        _dvId: e.cr_procurement_requestid,
+        id: e.cr_pr_number || `PR-${e.cr_procurement_requestid?.slice(0,8)}`,
+        date: e.createdon?.split("T")[0] || "",
+        requester: e.cr_requester || "",
+        dept: e.cr_department || "",
+        contractor: e.cr_contractor || "",
+        status: e.cr_status || "draft",
+        priority: e.cr_priority || "medium",
+        type: e.cr_work_type || "",
+        unit: e.cr_workplace || "",
+        amount: e.cr_amount || 0,
+        desc: e.cr_short_desc || "",
+        contractNo: e.cr_contract_no || "",
+        division: e.cr_division || "",
+        costCenter: e.cr_cost_center || "",
+        costElement: e.cr_cost_element || "",
+        workplace: e.cr_workplace || "",
+        workType: e.cr_work_type || "",
+        idNumber: "",
+        safetyEnv: e.cr_safety_env || "",
+        opEfficiency: e.cr_op_efficiency || "",
+        safetyObs: e.cr_safety_obs ? "Yes" : "No",
+        safetyObsNum: "",
+        affectsGen: e.cr_affects_gen ? "Yes" : "No",
+        sparePart: e.cr_spare_part ? "Yes" : "No",
+        fundingSource: e.cr_funding_source || "",
+        workStatus: "",
+        shortDesc: e.cr_short_desc || "",
+        scopeRows: (() => { try { return JSON.parse(e.cr_scope_json || "[]"); } catch { return []; } })(),
+        approvals: (() => { try { return JSON.parse(e.cr_approvals_json || "[]"); } catch { return []; } })(),
+        emsIndex: "", contractValue: "", totalExpPct: "",
+        priceAccept: "", materialComment: "",
+        certifiedRec: e.cr_certified_rec || "",
+        canPostpone: "No", plantCanDo: "No",
+        purchasedBefore: "No", criticalEquip: "No",
+      }));
+    } catch (dvErr) {
+      console.warn("Dataverse load failed, trying SharePoint:", dvErr);
+    }
+  }
+
+  // Fallback: SharePoint REST
   const res = await fetch(
-    `${siteUrl}/_api/web/lists/getbytitle('${encodeURIComponent(listName)}')/items?$orderby=Created%20desc&$top=100&$select=Id,Title,PRNumber,ContractNo,Contractor,Department,WorkType,Workplace,Amount,Status,Priority,RequesterName,CostCenter,CostElement,FundingSource,ShortDesc,ScopeJSON,ApprovalsJSON,SafetyEnv,OpEfficiency,Created`,
+    `${siteUrl}/_api/web/lists/getbytitle('Budgrt')/items?$orderby=Created%20desc&$top=100&$select=Id,Title,PRNumber,ContractNo,Contractor,Department,WorkType,Workplace,Amount,Status,Priority,RequesterName,CostCenter,CostElement,FundingSource,ShortDesc,ScopeJSON,ApprovalsJSON,Created`,
     {
-      credentials: "include",
-      mode: "cors",
-      headers: {
-        "Accept": "application/json;odata=verbose",
-      },
+      credentials: "same-origin",
+      headers: { "Accept": "application/json;odata=verbose" },
     }
   );
-
-  if (!res.ok) throw new Error(`SP fetch failed: ${res.status}`);
+  if (!res.ok) throw new Error(`SP ${res.status}`);
   const data = await res.json();
-
   return (data.d?.results || []).map((item: any) => ({
-    _spId:        item.Id,
-    id:           item.PRNumber || `PR-${item.Id}`,
-    date:         item.Created?.split("T")[0] || "",
-    requester:    item.RequesterName || "",
-    dept:         item.Department || "",
-    contractor:   item.Contractor || "",
-    status:       String(item.Status || "draft").toLowerCase(),
-    priority:     String(item.Priority || "medium").toLowerCase(),
-    type:         item.WorkType || "",
-    unit:         item.Workplace || "",
-    amount:       parseFloat(item.Amount) || 0,
-    desc:         item.Title || "",
-    contractNo:   item.ContractNo || "",
-    division:     "",
-    costCenter:   item.CostCenter || "",
-    costElement:  item.CostElement || "",
-    workplace:    item.Workplace || "",
-    workType:     item.WorkType || "",
-    idNumber:     "",
-    safetyEnv:    item.SafetyEnv || "",
-    opEfficiency: item.OpEfficiency || "",
-    safetyObs:    "No",
+    _spId: item.Id,
+    id: item.PRNumber || `PR-${item.Id}`,
+    date: item.Created?.split("T")[0] || "",
+    requester: item.RequesterName || "",
+    dept: item.Department || "",
+    contractor: item.Contractor || "",
+    status: String(item.Status || "draft").toLowerCase(),
+    priority: String(item.Priority || "medium").toLowerCase(),
+    type: item.WorkType || "",
+    unit: item.Workplace || "",
+    amount: parseFloat(item.Amount) || 0,
+    desc: item.Title || "",
+    contractNo: item.ContractNo || "",
+    division: "",
+    costCenter: item.CostCenter || "",
+    costElement: item.CostElement || "",
+    workplace: item.Workplace || "",
+    workType: item.WorkType || "",
+    idNumber: "",
+    safetyEnv: "",
+    opEfficiency: "",
+    safetyObs: "No",
     safetyObsNum: "",
-    affectsGen:   "No",
-    sparePart:    "No",
-    fundingSource:item.FundingSource || "",
-    workStatus:   "",
-    shortDesc:    item.ShortDesc || "",
-    scopeRows:    (() => { try { return JSON.parse(item.ScopeJSON || "[]"); } catch { return []; } })(),
-    approvals:    (() => { try { return JSON.parse(item.ApprovalsJSON || "[]"); } catch { return []; } })(),
-    emsIndex:     "",
-    contractValue:"",
-    totalExpPct:  "",
-    priceAccept:  "",
-    materialComment:"",
+    affectsGen: "No",
+    sparePart: "No",
+    fundingSource: item.FundingSource || "",
+    workStatus: "",
+    shortDesc: item.ShortDesc || "",
+    scopeRows: (() => { try { return JSON.parse(item.ScopeJSON || "[]"); } catch { return []; } })(),
+    approvals: (() => { try { return JSON.parse(item.ApprovalsJSON || "[]"); } catch { return []; } })(),
+    emsIndex: "", contractValue: "", totalExpPct: "",
+    priceAccept: "", materialComment: "",
     certifiedRec: "",
-    canPostpone:  "No",
-    plantCanDo:   "No",
-    purchasedBefore:"No",
-    criticalEquip:"No",
+    canPostpone: "No", plantCanDo: "No",
+    purchasedBefore: "No", criticalEquip: "No",
   }));
 }
 
