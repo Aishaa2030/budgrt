@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "appId": "679bc629-28a5-40a3-8384-930dddfd1aab",
+  "appDisplayName": "Budget App",
+  "region": "prod",
+  "environmentId": "3c6aebf9-b808-e7b2-b867-47344b760f4a",
+  "description": " ",
+  "buildPath": "./dist",
+  "buildEntryPoint": "index.html",
+  "localAppUrl": "http://localhost:3000",
+  "logoPath": "Default",
+  "connectionReferences": {
+    "6aa57e17-c300-4918-b7e7-98cb0d90ebbd": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_office365users",
+      "displayName": "Office 365 Users",
+      "dataSources": ["office365users"],
+      "dataSets": {}
+    },
+    "sharepoint-main": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "displayName": "SharePoint",
+      "connectionId": "4ff56649654e459ea0426fcca65d28d1",
+      "dataSources": ["PR_Requests_Main"],
+      "dataSets": {
+        "https://seccomsa.sharepoint.com/sites/EmployeeTasks": {
+          "tables": ["PR Requests Main"]
+        }
+      }
+    }
+  },
+  "databaseReferences": {}
+}

@@ -57,7 +57,7 @@ async function loadFromSharePoint(): Promise<any[]> {
 
   // Fallback: SharePoint REST
   const res = await fetch(
-    `${siteUrl}/_api/web/lists/getbytitle('Budgrt')/items?$orderby=Created%20desc&$top=100&$select=Id,Title,PRNumber,ContractNo,Contractor,Department,WorkType,Workplace,Amount,Status,Priority,RequesterName,CostCenter,CostElement,FundingSource,ShortDesc,ScopeJSON,ApprovalsJSON,Created`,
+    `${siteUrl}/_api/web/lists/getbytitle('PR Requests Main')/items?$orderby=Created%20desc&$top=100&$select=Id,Title,PRNumber,ContractNo,Contractor,Department,WorkType,Workplace,Amount,Status,Priority,RequesterName,CostCenter,CostElement,FundingSource,ShortDesc,ScopeJSON,ApprovalsJSON,Created`,
     {
       credentials: "same-origin",
       headers: { "Accept": "application/json;odata=verbose" },
