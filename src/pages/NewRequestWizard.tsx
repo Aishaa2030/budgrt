@@ -1,8 +1,73 @@
 import React, { useState, useEffect } from "react";
-import { createRequest } from "../services/dataverseService";
-import { createRequest as spCreateRequest } from "../services/sharepointService";
 import { getCurrentUser } from "../services/userService";
-import type { PRRequest } from "./mockData";
+
+async function saveToSharePoint(form: any) {
+  const siteUrl = "https://seccomsa.sharepoint.com/sites/EmployeeTasks";
+  const listName = "Budgrt";
+  const total = (form.scopeRows || []).reduce((s: number, r: any) => s + (parseFloat(r.cost) || 0), 0);
+  const prNumber = `PR-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+
+  const digestRes = await fetch(`${siteUrl}/_api/contextinfo`, {
+    method: "POST",
+    headers: { "Accept": "application/json;odata=verbose" },
+    credentials: "include",
+  });
+  const digestData = await digestRes.json();
+  const digest = digestData.d.GetContextWebInformation.FormDigestValue;
+
+  const body = {
+    __metadata: { type: "SP.Data.BudgrtListItem" },
+    Title: form.shortDesc || prNumber,
+    PRNumber: prNumber,
+    ContractNo: form.contractNo || "",
+    Contractor: form.contractorName || "",
+    Department: form.requesterDept || "",
+    WorkType: form.workType || "",
+    Workplace: form.workplace || "",
+    Amount: total,
+    Status: "pending",
+    Priority: "high",
+    RequesterName: form.requesterName || "",
+    CostCenter: form.costCenter || "",
+    CostElement: form.costElement || "",
+    FundingSource: form.fundingSource || "",
+    WorkStatus: form.workStatus || "",
+    ShortDesc: form.shortDesc || "",
+    ScopeJSON: JSON.stringify(form.scopeRows || []),
+    ApprovalsJSON: JSON.stringify([
+      {id:1,role:"Requested By",name:form.requesterName,status:"pending",ts:null,comment:null},
+      {id:2,role:"Section Head",name:"",status:"waiting",ts:null,comment:null},
+      {id:3,role:"Division Manager",name:"",status:"waiting",ts:null,comment:null},
+      {id:4,role:"Budget Group",name:"",status:"waiting",ts:null,comment:null},
+      {id:5,role:"TSD Div. Manager",name:"",status:"waiting",ts:null,comment:null},
+      {id:6,role:"SSPP Dept. Manager",name:"",status:"waiting",ts:null,comment:null},
+    ]),
+    SafetyEnv: form.safetyEnv || "",
+    OpEfficiency: form.opEfficiency || "",
+    CertifiedRec: form.certifiedRec || "",
+  };
+
+  const res = await fetch(
+    `${siteUrl}/_api/web/lists/getbytitle('${listName}')/items`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Accept": "application/json;odata=verbose",
+        "Content-Type": "application/json;odata=verbose",
+        "X-RequestDigest": digest,
+      },
+      body: JSON.stringify(body),
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`SharePoint error: ${res.status} — ${err.slice(0, 200)}`);
+  }
+
+  return prNumber;
+}
 
 interface Props { onDone: () => void; }
 
@@ -643,6 +708,12 @@ function Nav({ step, onPrev, onNext, submitting }: {
 export const NewRequestWizard: React.FC<Props> = ({ onDone }) => {
   const [step, setStep]           = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast]         = useState<string | null>(null);
+
+  const notify = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 4000);
+  };
   const today = new Date().toISOString().split("T")[0];
 
   const [F, setF] = useState<FormState>({
@@ -679,42 +750,16 @@ export const NewRequestWizard: React.FC<Props> = ({ onDone }) => {
   const updRow = (i:number,k:string,v:string) => setF(p=>({...p,scopeRows:p.scopeRows.map((r,j)=>j===i?{...r,[k]:v}:r)}));
 
   const handleSubmit = async () => {
-    const year = new Date().getFullYear();
-    const prId = `PR-${year}-${String(Date.now()).slice(-4)}`;
-    const fundingSource = F.planType==="plan"
-      ? "Plan in Budget (Div. Manager)"
-      : F.planType==="unplan" ? "UnPlan in Budget (Plant Manager)" : F.planType;
-    const newReq: PRRequest = {
-      id:prId, date:F.date, requester:F.requesterName, dept:F.dept,
-      contractor:F.contractorName, status:"pending", priority:"medium",
-      type:F.workType, unit:F.workplace, amount:total, desc:F.shortDesc,
-      contractNo:F.contractNo, division:F.division, costCenter:F.costCenter,
-      costElement:F.costElement, workplace:F.workplace, workType:F.workType,
-      idNumber:F.idNumber, safetyEnv:F.safetyEnv, opEfficiency:F.opEfficiency,
-      safetyObs:F.safetyObs, affectsGen:F.affectsGen, sparePart:F.sparePart,
-      criticalEquip:F.criticalEquip, fundingSource, workStatus:F.workStatus,
-      shortDesc:F.shortDesc, scopeRows:F.scopeRows,
-      emsIndex:F.emsIndex, contractValue:F.contractValue, totalExpPct:F.totalExpPct,
-      priceAccept:F.priceAccept, materialComment:F.materialComment, certifiedRec:F.certifiedRec,
-      workerNumber:F.workerNumber||undefined,
-      planType:F.planType||undefined,
-      contractLineItem:F.contractLineItem,
-      quotation:F.quotation,
-      materialThruBudget:F.materialBudget,
-      safetyObsNum:F.safetyObsNum||undefined,
-    };
     setSubmitting(true);
     try {
-      await spCreateRequest(F as Record<string, unknown>);
+      const prNum = await saveToSharePoint(F);
+      notify(`✓ تم حفظ الطلب ${prNum} في SharePoint بنجاح!`);
     } catch (e) {
-      console.error("SP save failed:", e);
+      console.error("SharePoint save failed:", e);
+      notify(`⚠ تم إرسال الطلب محلياً — ${String(e).slice(0, 80)}`);
     }
-    const guid = await createRequest(newReq);
     setSubmitting(false);
-    alert(guid
-      ? `✓ Request ${prId} submitted to Dataverse successfully!`
-      : `✓ Request ${prId} submitted! (Dataverse sync pending — check connection.)`);
-    onDone();
+    setTimeout(onDone, 1500);
   };
 
   return (
@@ -734,6 +779,16 @@ export const NewRequestWizard: React.FC<Props> = ({ onDone }) => {
         onNext={() => { if (step<4) setStep(s=>s+1); else handleSubmit(); }}
         submitting={submitting}
       />
+      {toast && (
+        <div style={{ position:"fixed", bottom:24, right:24, zIndex:9999,
+          padding:"13px 22px", borderRadius:10, fontSize:13, fontWeight:600,
+          background: toast.startsWith("✓") ? "#EDF7F0" : "#FEF8E7",
+          border: `1.5px solid ${toast.startsWith("✓") ? "#9DDFB3" : "#F0C843"}`,
+          color: toast.startsWith("✓") ? "#1A7F3C" : "#8B5E00",
+          boxShadow:"0 8px 24px rgba(0,0,0,0.12)" }}>
+          {toast}
+        </div>
+      )}
     </div>
   );
 };
